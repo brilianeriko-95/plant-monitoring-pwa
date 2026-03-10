@@ -1,241 +1,288 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#1a237e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <title>Logsheet Turbin Uap</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2921/2921822.png">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 15px;
-      color: #333;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      color: white;
-      margin-bottom: 20px;
-      padding: 15px 0;
-    }
-
-    .header h1 {
-      font-size: 1.4rem;
-      margin-bottom: 5px;
-    }
-
-    /* Settings */
-    .settings-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    .settings-card h3 {
-      color: #1a237e;
-      margin-bottom: 10px;
-      font-size: 1.1rem;
-    }
-
-    .config-input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #11998e, #38ef7d);
-      color: white;
-      margin-top: 20px;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Form Sections */
-    .section-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-
-    .section-card h3 {
-      color: #1a237e;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #e3f2fd;
-      font-size: 1.1rem;
-    }
-
-    .input-group {
-      margin-bottom: 15px;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: #555;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
-    }
-
-    .input-group input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-
-    /* Loading */
-    .loading {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255,255,255,0.95);
-      z-index: 1000;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .loading.active {
-      display: flex;
-    }
-
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #e0e0e0;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .status {
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      font-size: 0.9rem;
-    }
-
-    .status.success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#3b82f6">
+    <title>Plant Monitoring System</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <p style="margin-top: 15px; color: #666;">Mengirim data...</p>
-  </div>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading" class="screen active">
+            <div class="loader"></div>
+            <h2>Plant Monitoring</h2>
+            <p>Memuat aplikasi...</p>
+        </div>
 
-  <div class="container">
-    <div class="header">
-      <h1>📝 Logsheet Turbin Uap</h1>
-      <p>Input Data Sensor</p>
+        <!-- Login Screen -->
+        <div id="login" class="screen">
+            <div class="login-container">
+                <div class="logo">
+                    🏭
+                    <h1>Plant Monitoring</h1>
+                    <p>Sistem Logsheet & Anomali</p>
+                </div>
+                <div class="login-form">
+                    <input type="text" id="username" placeholder="Nama Operator" autocomplete="off">
+                    <button onclick="app.login()" class="btn-primary">Masuk</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="menu" class="screen">
+            <header class="app-header">
+                <div class="header-content">
+                    <span class="header-icon">🏭</span>
+                    <div class="header-text">
+                        <h1>Plant Monitoring</h1>
+                        <p>Sistem Logsheet & Anomali</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="menu-container">
+                <!-- Menu Utama Card -->
+                <div class="menu-card">
+                    <div class="card-title">
+                        <span class="card-icon">📋</span>
+                        <span>MENU UTAMA</span>
+                    </div>
+                    <div class="menu-grid">
+                        <button onclick="app.showLogsheet('TURBINE')" class="menu-btn">
+                            <div class="btn-icon turbine">⚙️</div>
+                            <span>Logsheet Turbine</span>
+                        </button>
+                        <button onclick="app.showLogsheet('CT')" class="menu-btn">
+                            <div class="btn-icon ct">🌀</div>
+                            <span>Logsheet CT</span>
+                        </button>
+                        <button onclick="app.showLogsheet('OLI')" class="menu-btn">
+                            <div class="btn-icon oli">🛢️</div>
+                            <span>Logsheet Oli</span>
+                        </button>
+                        <button onclick="app.showLaporan()" class="menu-btn">
+                            <div class="btn-icon laporan">📝</div>
+                            <span>Input Laporan</span>
+                        </button>
+                        <button onclick="app.showAnomali()" class="menu-btn">
+                            <div class="btn-icon anomali">⚠️</div>
+                            <span>Unsafe/Anomali</span>
+                        </button>
+                        <button onclick="app.showDashboard()" class="menu-btn">
+                            <div class="btn-icon dashboard">📊</div>
+                            <span>Dashboard</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rekap Data Card -->
+                <div class="menu-card">
+                    <div class="card-title">
+                        <span class="card-icon">📁</span>
+                        <span>REKAP DATA</span>
+                    </div>
+                    <div class="menu-grid rekap">
+                        <button onclick="app.showRekapData('CT')" class="menu-btn rekap-btn">
+                            <div class="btn-icon rekap-icon">📈</div>
+                            <span>Rekap CT</span>
+                        </button>
+                        <button onclick="app.showRekapData('TURBINE')" class="menu-btn rekap-btn">
+                            <div class="btn-icon rekap-icon">📈</div>
+                            <span>Rekap Turbine</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-bar">
+                <span>👤 <span id="user-display">Operator</span></span>
+                <button onclick="app.logout()" class="btn-logout">Keluar</button>
+            </div>
+        </div>
+
+        <!-- Area Selection -->
+        <div id="area-select" class="screen">
+            <header class="sub-header">
+                <button onclick="app.showMenu()" class="btn-back">←</button>
+                <h2 id="area-title">Pilih Area</h2>
+            </header>
+            <div class="content-area">
+                <div id="area-list" class="area-list"></div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div id="input" class="screen">
+            <header class="sub-header">
+                <button onclick="app.backToArea()" class="btn-back">←</button>
+                <div class="header-info">
+                    <h2 id="input-area">Area</h2>
+                    <span id="progress" class="badge">1/10</span>
+                </div>
+            </header>
+            
+            <div class="content-area">
+                <div class="input-card">
+                    <div class="param-header">
+                        <span class="param-label">Parameter</span>
+                        <h3 id="param-name">Parameter Name</h3>
+                    </div>
+                    
+                    <div id="prev-value-box" class="prev-box">
+                        <span class="prev-label">Data Sebelumnya</span>
+                        <span id="prev-value" class="prev-val">-</span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="param-input" placeholder="Masukkan nilai..." autocomplete="off">
+                        
+                        <div class="quick-buttons" id="quick-buttons">
+                            <button onclick="app.setValue('ON')" class="btn-toggle on">ON</button>
+                            <button onclick="app.setValue('OFF')" class="btn-toggle off">OFF</button>
+                        </div>
+
+                        <button onclick="app.usePrevious()" id="btn-prev" class="btn-use-prev">
+                            🔄 Gunakan Data Sebelumnya
+                        </button>
+                    </div>
+
+                    <div class="input-actions">
+                        <button onclick="app.skipParam()" class="btn-skip">Lewati</button>
+                        <button onclick="app.nextParam()" class="btn-next">Lanjut →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anomali Photo -->
+        <div id="anomali-photo" class="screen">
+            <header class="sub-header">
+                <button onclick="app.cancelAnomali()" class="btn-back">←</button>
+                <h2>📸 Dokumentasi</h2>
+            </header>
+            <div class="content-area">
+                <div class="camera-card">
+                    <div class="camera-preview">
+                        <video id="camera" autoplay playsinline></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                        <img id="photo-preview" style="display:none;">
+                    </div>
+                    
+                    <div class="camera-controls">
+                        <button onclick="app.takePhoto()" id="btn-capture" class="btn-capture">📷</button>
+                        <button onclick="app.retake()" id="btn-retake" class="btn-secondary" style="display:none;">🔄 Ulangi</button>
+                        <button onclick="app.confirmAnomali()" id="btn-confirm" class="btn-primary" style="display:none;">✓ Simpan</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Keterangan Temuan</label>
+                        <textarea id="anomali-ket" rows="3" placeholder="Deskripsikan temuan..."></textarea>
+                    </div>
+                    
+                    <button onclick="app.skipPhoto()" class="btn-text">Lewati Foto</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Laporan Shift -->
+        <div id="laporan" class="screen">
+            <header class="sub-header">
+                <button onclick="app.showMenu()" class="btn-back">←</button>
+                <h2>📝 Input Laporan</h2>
+            </header>
+            
+            <div class="content-area">
+                <div class="form-card">
+                    <div class="form-group">
+                        <label>Shift</label>
+                        <div class="shift-selector">
+                            <button onclick="app.selectShift('PAGI')" class="shift-btn" data-shift="PAGI">PAGI</button>
+                            <button onclick="app.selectShift('SORE')" class="shift-btn" data-shift="SORE">SORE</button>
+                            <button onclick="app.selectShift('MALAM')" class="shift-btn" data-shift="MALAM">MALAM</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Area</label>
+                        <select id="laporan-area">
+                            <option value="CT">Cooling Tower (CT)</option>
+                            <option value="TURBINE">Turbine</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Detail Pekerjaan</label>
+                        <textarea id="laporan-text" rows="5" placeholder="Tuliskan detail pekerjaan yang dilakukan..."></textarea>
+                    </div>
+
+                    <button onclick="app.saveLaporan()" class="btn-primary btn-full">Simpan Laporan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="screen">
+            <header class="sub-header">
+                <button onclick="app.showMenu()" class="btn-back">←</button>
+                <h2>📊 Dashboard</h2>
+                <button onclick="app.refreshDashboard()" class="btn-refresh">🔄</button>
+            </header>
+            
+            <div class="content-area">
+                <div class="stats-grid">
+                    <div class="stat-card open">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-number" id="dash-open">0</div>
+                        <div class="stat-label">OPEN</div>
+                    </div>
+                    <div class="stat-card progress">
+                        <div class="stat-icon">🟡</div>
+                        <div class="stat-number" id="dash-progress">0</div>
+                        <div class="stat-label">PROGRESS</div>
+                    </div>
+                    <div class="stat-card closed">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-number" id="dash-closed">0</div>
+                        <div class="stat-label">CLOSED</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Tiket Perlu Tindakan</div>
+                <div id="ticket-list" class="ticket-list"></div>
+            </div>
+        </div>
+
+        <!-- List Anomali -->
+        <div id="list-anomali" class="screen">
+            <header class="sub-header">
+                <button onclick="app.showMenu()" class="btn-back">←</button>
+                <h2>📂 Daftar Anomali</h2>
+            </header>
+            <div class="content-area">
+                <div id="anomali-container" class="ticket-list"></div>
+            </div>
+        </div>
+
+        <!-- Rekap View -->
+        <div id="rekap-view" class="screen">
+            <header class="sub-header">
+                <button onclick="app.showMenu()" class="btn-back">←</button>
+                <h2 id="rekap-title">Rekap Data</h2>
+            </header>
+            <div class="content-area">
+                <div id="rekap-content" class="rekap-content"></div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
     </div>
 
-    <!-- Settings -->
-    <div class="settings-card" id="settingsCard">
-      <h3>⚙️ Konfigurasi Server</h3>
-      <input type="url" 
-             id="scriptUrl" 
-             class="config-input" 
-             placeholder="https://script.google.com/macros/s/.../exec"
-             value="">
-      <button class="btn btn-primary" onclick="saveConfig()">
-        Simpan & Lanjutkan
-      </button>
-      <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-        *Masukkan URL Google Apps Script Web App
-      </p>
-    </div>
-
-    <!-- Form -->
-    <form id="pwa-form" class="hidden">
-      <div id="form-fields"></div>
-      
-      <button type="submit" class="btn btn-success" id="btnSubmit">
-        💾 Kirim ke Spreadsheet
-      </button>
-      
-      <button type="button" class="btn btn-primary" onclick="resetConfig()" style="margin-top: 10px; background: #6c757d;">
-        ⚙️ Ganti Server
-      </button>
-    </form>
-  </div>
-
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
