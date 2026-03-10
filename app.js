@@ -1,5 +1,5 @@
 const CONFIG = {
-    GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbyi402uBAu6vAiVKjnMynwyvl2TRBm9OyNlsZybfCMEksGNtPUf49T30qa32fSdjyKymA/exec',
     AREAS_TURBINE: {
         "Steam Inlet Turbine": ["MPS Inlet 30-TP-6101 PI-6114 (kg/cm2)", "MPS Inlet 30-TP-6101 TI-6153 (°C)"],
         "Low Pressure Steam": ["LPS from U-6101 PI-6104 (kg/cm2)", "LPS from U-6101 TI-6102 (°C)"],
