@@ -60,15 +60,110 @@ window.onload = function() {
   }
 };
 
+// ===== CONFIGURATION FUNCTIONS =====
 function saveConfig() {
   const url = document.getElementById('scriptUrl').value.trim();
-  if (!url || !url.includes('script.google.com')) {
-    alert('Masukkan URL Google Apps Script yang valid!');
+  
+  // Validasi ketat
+  if (!url) {
+    alert('❌ URL tidak boleh kosong!');
     return;
   }
+  
+  if (!url.includes('script.google.com')) {
+    alert('❌ URL harus dari script.google.com!');
+    return;
+  }
+  
+  if (!url.endsWith('/exec')) {
+    alert('❌ URL harus diakhiri dengan /exec');
+    return;
+  }
+  
+  // Simpan dan reload
   localStorage.setItem('gasUrl', url);
   SCRIPT_URL = url;
   location.reload();
+}
+
+function resetConfig() {
+  if (confirm('Hapus konfigurasi dan masukkan URL baru?')) {
+    localStorage.removeItem('gasUrl');
+    location.reload();
+  }
+}
+
+// ===== TEST CONNECTION =====
+async function testConnection() {
+  const url = document.getElementById('scriptUrl').value.trim();
+  
+  if (!url || !url.endsWith('/exec')) {
+    alert('Masukkan URL yang valid terlebih dahulu!');
+    return;
+  }
+
+  const loading = document.getElementById('loading');
+  loading.classList.add('active');
+  loading.querySelector('.loading-text').textContent = 'Testing koneksi...';
+
+  try {
+    console.log('Testing URL:', url);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 detik timeout
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-cache',
+      signal: controller.signal,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'test'
+      })
+    });
+    
+    clearTimeout(timeoutId);
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+    }
+    
+    const text = await response.text();
+    console.log('Raw response:', text);
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error('Response bukan JSON valid: ' + text.substring(0, 100));
+    }
+    
+    loading.classList.remove('active');
+    
+    if (data.success || data.status === 'OK') {
+      alert('✅ Koneksi BERHASIL!\n\nPesan: ' + (data.message || 'OK') + '\n\nKlik "Simpan & Mulai" untuk menggunakan URL ini.');
+    } else {
+      alert('⚠️ Koneksi OK tapi server error:\n' + data.message);
+    }
+  } catch (err) {
+    loading.classList.remove('active');
+    console.error('Test error:', err);
+    
+    let errorMsg = err.message;
+    if (err.name === 'AbortError') {
+      errorMsg = 'Request timeout (10 detik). Cek URL dan koneksi internet.';
+    } else if (err.message.includes('Failed to fetch')) {
+      errorMsg = 'Failed to fetch.\n\nPenyebab umum:\n1. URL salah\n2. Belum deploy GAS dengan "Access: Anyone"\n3. CORS belum di-enable di GAS\n4. Network error';
+    }
+    
+    alert('❌ Koneksi GAGAL!\n\nError: ' + errorMsg + '\n\nCek console (F12) untuk detail teknis.');
+  }
 }
 
 // ===== RENDER FUNCTIONS =====
@@ -80,7 +175,7 @@ function renderStep() {
   if (isReview) {
     renderReview(container);
     progressFill.style.width = '100%';
-    const filled = Object.values(values).filter(v => v).length;
+    const filled = Object.values(values).filter(v => v && v !== '').length;
     progressText.textContent = `Review (${filled}/${SENSOR_DATA.length} terisi)`;
     return;
   }
@@ -237,18 +332,29 @@ function renderSuccess(timestamp) {
   `;
 }
 
-// ===== ACTIONS =====
+// ===== INPUT ACTIONS =====
 function setValue(val) {
-  document.getElementById('valueInput').value = val;
-  document.getElementById('skipCheck').checked = false;
   const input = document.getElementById('valueInput');
+  const skipCheck = document.getElementById('skipCheck');
+  
+  input.value = val;
+  skipCheck.checked = false;
   input.disabled = false;
   input.style.opacity = '1';
+  
   setTimeout(nextStep, 200);
 }
 
 function addValue(val) {
   const input = document.getElementById('valueInput');
+  const skipCheck = document.getElementById('skipCheck');
+  
+  if (skipCheck.checked) {
+    skipCheck.checked = false;
+    input.disabled = false;
+    input.style.opacity = '1';
+  }
+  
   if (val === '0' && input.value === '') {
     input.value = '0';
   } else if (val === '-') {
@@ -277,14 +383,19 @@ function toggleSkip(checkbox) {
 }
 
 function handleKeyPress(e) {
-  if (e.key === 'Enter') nextStep();
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    nextStep();
+  }
 }
 
+// ===== NAVIGATION =====
 function nextStep() {
   const input = document.getElementById('valueInput');
+  const skipCheck = document.getElementById('skipCheck');
   const header = headers[currentStep];
   
-  if (!document.getElementById('skipCheck').checked) {
+  if (!skipCheck.checked) {
     values[header] = input.value.trim();
   } else {
     values[header] = '';
@@ -331,30 +442,118 @@ function resetApp() {
   document.getElementById('progressFill').style.width = '5%';
 }
 
+// ===== SAVE DATA =====
 async function saveData() {
   const loading = document.getElementById('loading');
   loading.classList.add('active');
+  loading.querySelector('.loading-text').textContent = 'Menyimpan data...';
 
   try {
+    // Validasi
+    if (!SCRIPT_URL) {
+      throw new Error('URL Google Apps Script belum dikonfigurasi!');
+    }
+
+    console.log('Saving to:', SCRIPT_URL);
+    console.log('Data payload:', JSON.stringify({action: 'save', values: values}));
+
+    // Prepare data - pastikan semua header ada
+    const payload = {};
+    headers.forEach(h => {
+      payload[h] = values[h] || '';
+    });
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 detik timeout
+
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
+      cache: 'no-cache',
+      signal: controller.signal,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({
         action: 'save',
-        values: values
+        values: payload
       })
     });
     
-    const data = await response.json();
+    clearTimeout(timeoutId);
+    
+    console.log('Response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+    }
+    
+    const text = await response.text();
+    console.log('Raw response:', text);
+    
+    if (!text) {
+      throw new Error('Response kosong dari server');
+    }
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      throw new Error('Response tidak valid JSON: ' + text.substring(0, 200));
+    }
+    
     loading.classList.remove('active');
     
     if (data.success) {
-      renderSuccess(data.timestamp);
+      renderSuccess(data.timestamp || new Date().toLocaleString('id-ID'));
     } else {
-      alert('Gagal: ' + data.message);
+      alert('❌ Server error: ' + (data.message || 'Unknown error'));
     }
+    
   } catch (err) {
     loading.classList.remove('active');
-    alert('Error: ' + err.message);
+    console.error('Save error:', err);
+    
+    let errorMsg = err.message;
+    let solution = '';
+    
+    if (err.name === 'AbortError') {
+      errorMsg = 'Request timeout (30 detik). Server terlalu lambat atau tidak merespons.';
+      solution = 'Coba lagi atau cek status server GAS.';
+    } else if (err.message.includes('Failed to fetch')) {
+      errorMsg = 'Failed to fetch - Tidak bisa terhubung ke server.';
+      solution = 'Penyebab umum:\n1. URL salah atau tidak aktif\n2. CORS belum di-enable di GAS (tambahkan doOptions)\n3. Deploy GAS belum di-set "Access: Anyone"\n4. Network/firewall blocking';
+    } else if (err.message.includes('NetworkError')) {
+      errorMsg = 'Network Error - Periksa koneksi internet.';
+      solution = 'Pastikan device terhubung ke internet.';
+    }
+    
+    alert('❌ Error Menyimpan Data!\n\n' + errorMsg + '\n\nSolusi:\n' + solution + '\n\nDetail teknis ada di Console (F12).');
   }
 }
+
+// ===== DEBUG UTILITIES =====
+function debugShowConfig() {
+  console.log('Current config:', {
+    SCRIPT_URL: SCRIPT_URL,
+    localStorage: localStorage.getItem('gasUrl'),
+    values: values,
+    currentStep: currentStep
+  });
+}
+
+function debugClearData() {
+  if (confirm('Hapus semua data input?')) {
+    values = {};
+    currentStep = 0;
+    isReview = false;
+    renderStep();
+    console.log('Data cleared');
+  }
+}
+
+// Expose debug functions globally
+window.debugShowConfig = debugShowConfig;
+window.debugClearData = debugClearData;
