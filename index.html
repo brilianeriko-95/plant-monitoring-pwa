@@ -20,7 +20,7 @@
 <body>
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div class="loading-text">Menyimpan data...</div>
+    <div class="loading-text">Memproses...</div>
   </div>
 
   <div class="container">
@@ -29,23 +29,51 @@
       <p>Input data sensor step-by-step</p>
     </div>
 
+    <!-- Settings Card -->
     <div class="settings-card" id="settingsCard">
-      <h3>⚙️ Konfigurasi</h3>
+      <h3>⚙️ Konfigurasi Server</h3>
       <p>Masukkan URL Google Apps Script Web App:</p>
+      
       <input type="url" 
              id="scriptUrl" 
              class="config-input" 
              placeholder="https://script.google.com/macros/s/.../exec"
              value="">
-      <button class="btn btn-primary" onclick="saveConfig()" style="width: 100%; margin-top: 10px;">
-        Simpan & Mulai
-      </button>
-      <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-        *URL didapat saat deploy Google Apps Script
+      
+      <div class="button-group">
+        <button class="btn btn-secondary" onclick="testConnection()">
+          🧪 Test
+        </button>
+        <button class="btn btn-primary" onclick="saveConfig()">
+          💾 Simpan & Mulai
+        </button>
+      </div>
+      
+      <p class="help-text">
+        *Klik <strong>Test</strong> dulu untuk cek koneksi sebelum menyimpan
       </p>
+      
+      <details class="help-details">
+        <summary>📖 Cara mendapatkan URL</summary>
+        <ol>
+          <li>Buka <a href="https://script.google.com" target="_blank">Google Apps Script</a></li>
+          <li>Buka project Anda</li>
+          <li>Klik <strong>Deploy</strong> → <strong>New deployment</strong></li>
+          <li>Pilih Type: <strong>Web app</strong></li>
+          <li>Execute as: <strong>Me</strong></li>
+          <li>Who has access: <strong>Anyone</strong></li>
+          <li>Klik <strong>Deploy</strong> dan copy URL</li>
+        </ol>
+      </details>
     </div>
 
+    <!-- Main App Card -->
     <div class="card" id="app" style="display: none;">
+      <div class="app-header">
+        <button class="btn-icon" onclick="resetConfig()" title="Ganti URL Server">⚙️</button>
+        <button class="btn-icon" onclick="debugShowConfig()" title="Debug Info">🐛</button>
+      </div>
+      
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill" style="width: 0%"></div>
       </div>
@@ -62,7 +90,7 @@
     // Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('SW registered'))
+        .then(reg => console.log('SW registered:', reg.scope))
         .catch(err => console.log('SW error:', err));
     }
   </script>
