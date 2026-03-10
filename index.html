@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a237e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <title>Logsheet Turbin Uap</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2921/2921822.png">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Menyimpan data...</div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>📝 Logsheet Turbin Uap</h1>
+      <p>Input data sensor step-by-step</p>
+    </div>
+
+    <div class="settings-card" id="settingsCard">
+      <h3>⚙️ Konfigurasi</h3>
+      <p>Masukkan URL Google Apps Script Web App:</p>
+      <input type="url" 
+             id="scriptUrl" 
+             class="config-input" 
+             placeholder="https://script.google.com/macros/s/.../exec"
+             value="">
+      <button class="btn btn-primary" onclick="saveConfig()" style="width: 100%; margin-top: 10px;">
+        Simpan & Mulai
+      </button>
+      <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+        *URL didapat saat deploy Google Apps Script
+      </p>
+    </div>
+
+    <div class="card" id="app" style="display: none;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="progress-text" id="progressText">Memuat data...</div>
+
+      <div class="step-container" id="stepContainer">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    }
+  </script>
+</body>
+</html>
