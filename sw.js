@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plant-monitor-v1';
+const CACHE_NAME = 'plant-monitor-v2';
 const urlsToCache = [
     '/',
     '/index.html',
